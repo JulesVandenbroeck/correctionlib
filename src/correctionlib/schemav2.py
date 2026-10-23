@@ -699,14 +699,15 @@ class UncertaintySet(Model):
         dupe = set()
         directions: dict[str, set[Optional[str]]] = {}
         for item in items:
-            key = (item.nuisance_name, item.direction)
+            inputs = tuple(sorted((inp.name, inp.value) for inp in item.inputs))
+            key = (item.nuisance_name, item.direction, inputs)
             if key in seen:
                 dupe.add(key)
             seen.add(key)
             directions.setdefault(item.nuisance_name, set()).add(item.direction)
         if len(dupe):
             raise ValueError(
-                f"Uncertainty sources must have unique (nuisance_name, direction) pairs, found duplicates for {dupe}"
+                f"Uncertainty sources must have unique (nuisance_name, direction, inputs) triples, found duplicates for {dupe}"
             )
         mixed = {
             name for name, dirs in directions.items() if None in dirs and len(dirs) > 1
